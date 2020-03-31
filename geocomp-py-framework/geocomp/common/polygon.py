@@ -98,7 +98,7 @@ class Polygon:
         edges.append(Segment(p, p.next))
         return edges
     
-    # Retorna o par (p, n) que vem antes e depois de v no polígono
+    #Retorna o par (p, n) que vem antes e depois de v no polígono
     def adj(self, v):
         vertices = self.vertices()
         for i in range(len(vertices)):
