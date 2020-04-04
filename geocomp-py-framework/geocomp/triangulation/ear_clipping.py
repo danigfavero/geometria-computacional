@@ -1,5 +1,7 @@
 from geocomp.common.point import Point
 from geocomp.common.polygon import Polygon
+from geocomp.common import control
+from geocomp.common.guiprim import *
 
 def area2(a, b, c):
     '''Recebe 3 pontos e devolve a área do polígono delimitado pelos pontos
@@ -74,7 +76,15 @@ def ear_tip(P, v):
     uma ponta de orelha'''
     u = v.prev
     w = v.next
-    return diagonal(P, u, w)
+    v.hilight('green')
+    u.hilight('yellow')
+    w.hilight('yellow')
+    diag = diagonal(P, u, w)
+    u.unhilight()
+    w.unhilight()
+    if not diag:
+        v.unhilight()
+    return diag
 
 def find_ears(P):
     '''Recebe um polígono P e devolve um dicionário cujas chaves são pontos e
@@ -82,10 +92,8 @@ def find_ears(P):
     ears = {}
     v = P.pts
     while True:
-        u = v.prev
-        w = v.next
-        ears[v] = (diagonal(P, u, w))
-        v = w
+        ears[v] = ear_tip(P,v)
+        v = v.next
         if v == P.pts:
             break
     return ears
@@ -93,16 +101,24 @@ def find_ears(P):
 def triangulation(n, P):
     '''Recebe um polígono P com n lados e devolve a triangulação de P'''
     ears = find_ears(P)
-    v3 = P.pts
+    v3 = P.vertices()[0]
     while n > 3:
         v2 = v3
         while not ears[v2]:
             v2 = v2.next
+        v2.hilight("blue")
         v1 = v2.prev
         v3 = v2.next
+        v1.lineto(v3, "blue")
         print(v1, v3)
+        v2.unhilight()
         v1.next = v3
         v3.prev = v1
         n -= 1
         ears[v1] = ear_tip(P, v1)
         ears[v3] = ear_tip(P, v3)
+
+def Ear_clipping(lista):
+    P = lista[0]
+    n = len(P.to_list())
+    triangulation(n, P)
