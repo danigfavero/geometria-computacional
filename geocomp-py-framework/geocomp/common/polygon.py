@@ -125,15 +125,15 @@ class Polygon:
                 return False
         return True
 
-    ################ DANIELA TRIANGULAÇÃO ######################
+    ################ DANIELA TRIANGULAÇÃO 05abril2020 ####################
     def remove_vertex(self, v):
         p = self.pts
-        while p.next != self.pts:
-            if p == v:
-                p.prev.next = p.next
-                p.next.prev = p.prev
-                return
+        while p != v:
             p = p.next
+            if p == self.pts:
+                raise RuntimeError()
+        p.prev.next = p.next
+        p.next.prev = p.prev
 
     def next(self, v):
         return self.adj(v)[1]

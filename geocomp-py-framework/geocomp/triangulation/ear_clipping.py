@@ -47,7 +47,7 @@ def intersects(a, b, c, d):
 def in_cone(P, u, w):
     '''Verifica se o segmento uw está no cone das arestas vizinhas do polígono'''
     v = P.prev(u)
-    t = P.next(v)
+    t = P.next(u)
     if left(v, u, t):
         return left_plus(u, w, v) and left_plus(w, u, t)
     return left(u, w, t) and left(w, u, v)
@@ -74,8 +74,11 @@ def diagonal(P, u, w):
 def ear_tip(P, v):
     '''Recebe um polígono P e um vértice v desse polígono, e decide se ele é
     uma ponta de orelha'''
+    print(f"v: {v}, v.prev: {P.prev(v)}") #FIXME
     u = P.prev(v)
+    print(f"u: {u}") #FIXME
     w = P.next(v)
+    print(f"w: {w}") #FIXME
     v.hilight('green')
     u.hilight('yellow')
     w.hilight('yellow')
@@ -107,7 +110,7 @@ def triangulation(n, P):
     while n > 3:
         v2 = v3
         while not ears[v2]:
-            v2 = P.next(v2)
+        v2 = P.next(v2)
         v2.hilight("blue")
         v1 = P.prev(v2)
         v3 = P.next(v2)
@@ -117,9 +120,11 @@ def triangulation(n, P):
         v2.unhilight()
         control.update()
         P.remove_vertex(v2)
+        print(f"OIAAAAAAA {P.next(v1)}") #FIXME
         n -= 1
         ears[v1] = ear_tip(P, v1)
         ears[v3] = ear_tip(P, v3)
+
 
 def Ear_clipping(lista):
     P = lista[0]
