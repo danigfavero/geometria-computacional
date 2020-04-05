@@ -124,3 +124,22 @@ class Polygon:
             if e not in edges1:
                 return False
         return True
+
+    ################ DANIELA TRIANGULAÇÃO ######################
+    def remove_vertex(self, v):
+        p = self.pts
+        while p.next != self.pts:
+            if p == v:
+                p.prev.next = p.next
+                p.next.prev = p.prev
+                return
+            p = p.next
+
+    def next(self, v):
+        return self.adj(v)[1]
+
+    def prev(self, v):
+        return self.adj(v)[0]
+
+    def head(self):
+        return self.vertices()[0]

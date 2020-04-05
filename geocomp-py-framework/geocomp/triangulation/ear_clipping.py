@@ -46,8 +46,8 @@ def intersects(a, b, c, d):
 
 def in_cone(P, u, w):
     '''Verifica se o segmento uw está no cone das arestas vizinhas do polígono'''
-    v = u.prev
-    t = u.next
+    v = P.prev(u)
+    t = P.next(v)
     if left(v, u, t):
         return left_plus(u, w, v) and left_plus(w, u, t)
     return left(u, w, t) and left(w, u, v)
@@ -56,16 +56,16 @@ def almost_diagonal(P, u, w):
     '''Decide se dois vértices u, w de um polígono P formam uma quase-diagonal,
     ou seja, ignorando o caso do segmento uw estar no cone das arestas vizinhas
     do polígono'''
-    v = P.pts
-    t = v.next
+    v = P.head()
+    t = P.next(v)
     while True:
         if (v != u) and (v != w) and (t != u) and (t != w):
             if intersects(u, w, v, t):
                 return False
-        if t.next == v:
+        if t == P.head():
             return True
         v = t
-        t = v.next
+        t = P.next(v)
 
 def diagonal(P, u, w):
     '''Decide se dois vértices u, w de um polígono P formam uma diagonal'''
@@ -74,51 +74,54 @@ def diagonal(P, u, w):
 def ear_tip(P, v):
     '''Recebe um polígono P e um vértice v desse polígono, e decide se ele é
     uma ponta de orelha'''
-    u = v.prev
-    w = v.next
+    u = P.prev(v)
+    w = P.next(v)
     v.hilight('green')
     u.hilight('yellow')
     w.hilight('yellow')
+    control.update()
     diag = diagonal(P, u, w)
     u.unhilight()
     w.unhilight()
     if not diag:
         v.unhilight()
+    control.update()
     return diag
 
 def find_ears(P):
     '''Recebe um polígono P e devolve um dicionário cujas chaves são pontos e
     os valores dizem se os pontos correspondentes são pontas de orelha ou não'''
     ears = {}
-    v = P.pts
+    v = P.head()
     while True:
         ears[v] = ear_tip(P,v)
-        v = v.next
-        if v == P.pts:
+        v = P.next(v)
+        if v == P.head():
             break
     return ears
 
 def triangulation(n, P):
     '''Recebe um polígono P com n lados e devolve a triangulação de P'''
     ears = find_ears(P)
-    v3 = P.vertices()[0]
+    v3 = P.head()
     while n > 3:
         v2 = v3
         while not ears[v2]:
-            v2 = v2.next
+            v2 = P.next(v2)
         v2.hilight("blue")
-        v1 = v2.prev
-        v3 = v2.next
+        v1 = P.prev(v2)
+        v3 = P.next(v2)
         v1.lineto(v3, "blue")
+        control.update()
         print(v1, v3)
         v2.unhilight()
-        v1.next = v3
-        v3.prev = v1
+        control.update()
+        P.remove_vertex(v2)
         n -= 1
         ears[v1] = ear_tip(P, v1)
         ears[v3] = ear_tip(P, v3)
 
 def Ear_clipping(lista):
     P = lista[0]
-    n = len(P.to_list())
+    n = len(P.vertices())
     triangulation(n, P)
