@@ -108,6 +108,7 @@ class Polygon:
                 if i == len(vertices) - 1:
                     return vertices[i - 1], vertices[0]
                 return vertices[i - 1], vertices[i + 1]
+        print("NONE")
         return None
 
     def __eq__(self, other):
@@ -134,12 +135,10 @@ class Polygon:
                 raise RuntimeError()
         p.prev.next = p.next
         p.next.prev = p.prev
+        self.pts = p.next
 
     def next(self, v):
         return self.adj(v)[1]
 
     def prev(self, v):
         return self.adj(v)[0]
-
-    def head(self):
-        return self.vertices()[0]

@@ -6,7 +6,7 @@ from geocomp.common.guiprim import *
 def area2(a, b, c):
     '''Recebe 3 pontos e devolve a área do polígono delimitado pelos pontos
     multiplicada por 2'''
-    return (a.x - c.x)*(b.y - c.y) - (a.y - c.y)*(b.x - c.x)
+    return (a.x * b.y + a.y * c.x + b.x * c.y - b.y * c.x - c.y * a.x - b.x * a.y)
 
 def left_plus(a, b, c):
     '''Verifica se o ponto c está à esquerda da reta dada por ab'''
@@ -50,19 +50,19 @@ def in_cone(P, u, w):
     t = P.next(u)
     if left(v, u, t):
         return left_plus(u, w, v) and left_plus(w, u, t)
-    return left(u, w, t) and left(w, u, v)
+    return left(w, u, t) and left(u, w, v)
 
 def almost_diagonal(P, u, w):
     '''Decide se dois vértices u, w de um polígono P formam uma quase-diagonal,
     ou seja, ignorando o caso do segmento uw estar no cone das arestas vizinhas
     do polígono'''
-    v = P.head()
+    v = P.pts
     t = P.next(v)
     while True:
         if (v != u) and (v != w) and (t != u) and (t != w):
             if intersects(u, w, v, t):
                 return False
-        if t == P.head():
+        if t == P.pts:
             return True
         v = t
         t = P.next(v)
@@ -74,59 +74,63 @@ def diagonal(P, u, w):
 def ear_tip(P, v):
     '''Recebe um polígono P e um vértice v desse polígono, e decide se ele é
     uma ponta de orelha'''
-    print(f"v: {v}, v.prev: {P.prev(v)}") #FIXME
     u = P.prev(v)
-    print(f"u: {u}") #FIXME
     w = P.next(v)
-    print(f"w: {w}") #FIXME
     v.hilight('green')
     u.hilight('yellow')
     w.hilight('yellow')
-    control.update()
+    control.sleep()
+    control.thaw_update() 
+    control.update ()
     diag = diagonal(P, u, w)
     u.unhilight()
     w.unhilight()
     if not diag:
         v.unhilight()
-    control.update()
+    control.sleep()
+    control.thaw_update() 
+    control.update ()
     return diag
 
 def find_ears(P):
     '''Recebe um polígono P e devolve um dicionário cujas chaves são pontos e
     os valores dizem se os pontos correspondentes são pontas de orelha ou não'''
     ears = {}
-    v = P.head()
+    v = P.pts
     while True:
         ears[v] = ear_tip(P,v)
         v = P.next(v)
-        if v == P.head():
+        if v == P.pts:
             break
     return ears
 
 def triangulation(n, P):
     '''Recebe um polígono P com n lados e devolve a triangulação de P'''
     ears = find_ears(P)
-    v3 = P.head()
+    v3 = P.pts
     while n > 3:
         v2 = v3
         while not ears[v2]:
-        v2 = P.next(v2)
+            v2 = P.next(v2)
         v2.hilight("blue")
         v1 = P.prev(v2)
         v3 = P.next(v2)
         v1.lineto(v3, "blue")
+        control.sleep()
+        control.thaw_update() 
         control.update()
         print(v1, v3)
         v2.unhilight()
-        control.update()
+        control.sleep()
+        control.thaw_update() 
+        control.update ()
         P.remove_vertex(v2)
-        print(f"OIAAAAAAA {P.next(v1)}") #FIXME
         n -= 1
         ears[v1] = ear_tip(P, v1)
         ears[v3] = ear_tip(P, v3)
 
-
 def Ear_clipping(lista):
+    '''Recebe um polígono P e devolve sua respectiva triangulação'''
     P = lista[0]
     n = len(P.vertices())
     triangulation(n, P)
