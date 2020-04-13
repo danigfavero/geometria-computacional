@@ -145,34 +145,35 @@ class Point:
     
 
     """
-    Ordem dada por y, desempatando por x 
-    PS: Usado no projeto do Lucas Moretto de Visibility Graph.
+    Ordem dada por x, usando y para desempatar
+    PS: Usado no projeto de Daniela Favero para detectar todas as intersecções
+    de segmentos
     """
     def __lt__(self, other):
-        if self is other:
-            return True
         if type(self) != type(other):
             return False
-        if self.y < other.y:
+        if self is other:
             return True
-        if self.y > other.y:
-            return False
         if self.x < other.x:
+            return True
+        if self.x > other.x:
+            return False
+        if self.y < other.y:
             return True
         return False
 
     def __le__(self, other):
+        if type(self) != type(other):
+            return False
         if self is other:
             return True
-        if type(self) != type(other):
+        if self.x < other.x:
+            return True
+        if self.x > other.x:
             return False
         if self.y < other.y:
             return True
         if self.y > other.y:
-            return False
-        if self.x < other.x:
-            return True
-        if self.x > other.x:
             return False
         return True
 
@@ -191,4 +192,3 @@ class Edge:
 	def __repr__ (self):
 		return '( ' + repr(self.point) + ' )'
 ##########################
-    
