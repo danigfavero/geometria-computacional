@@ -34,6 +34,9 @@ def sorted_extremes(l, n):
     return Q
 
 def find_intersections(l, n):
+    ''' Detecta e processa os pontos eventos da linha de varredura de modo a
+    encontrar todas as intersecções.
+    '''
     Q = sorted_extremes(l, n)
     T = AVLTree()
     while not Q.is_empty():
@@ -41,6 +44,9 @@ def find_intersections(l, n):
         treat_event(p, Q, T)
 
 def treat_event(p, Q, T):
+    ''' Recebe o ponto evento e o trata conforme seu tipo: extremo esquerdo,
+    extremo direito e ponto de intersecção. 
+    '''
     event = p[1]
     point = p[0]
 
@@ -94,11 +100,15 @@ def treat_event(p, Q, T):
             verify_new_event(p, Q, s1, succ)
 
 def verify_new_event(p, Q, s1, s2):
+    ''' Verifica novo evento e registra intersecção
+    '''
     q = intersection_point(s1, s2)
     if q > p and q not in Q:
         Q[q] = Event("inter", s1, s2)
         print(q)
 
 def intersection_point(s1, s2):
+    ''' Devolve um ponto no qual dois segmentos se intersectam
+    '''
     # TODO como eu sei qual é o (primeiro) ponto no qual eles se intersectam
     pass
