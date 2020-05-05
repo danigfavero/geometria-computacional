@@ -1,41 +1,43 @@
 import math
 
 ###########mergesort carinhosamente inspirado pela internet############# 
-# valeu, jayesh do https://rextester.com/PEAA86258
-def merge(left, right):
-    leftIndex = 0
-    rightIndex = 0
-    
-    result = []
-    
-    while leftIndex < len(left) and rightIndex < len(right):
-        if left[leftIndex] <= right[rightIndex]:
-            result.append(left[leftIndex])
-            leftIndex += 1
+def merge(xleft, yleft, xright, yright):
+    if not len(xleft) or not len(xright):
+        return (xleft, yleft) or (xright, yright)
+
+    xresult = []
+    yresult = []
+    i, j = 0, 0
+    while (len(xresult) < len(xleft) + len(xright)):
+        if xleft[i] < xright[j]:
+            xresult.append(xleft[i])
+            yresult.append(yleft[i])
+            i+= 1
         else:
-            result.append(right[rightIndex])
-            rightIndex += 1
-    
-    if leftIndex < len(left):
-        result.extend(left[leftIndex:])
-    elif rightIndex < len(right):
-        result.extend(right[rightIndex:])
-        
-    return result
-    
-def merge_sort(xarr, yarr):
-    if xarr is None:
-        return None
-    
-    if len(xarr) < 2:
-        return xarr, yarr
-    
-    xleft = xarr[: len(xarr) // 2]
-    yleft = yarr[: len(xarr) // 2]
-    xright = xarr[len(xarr) // 2 :]
-    yright = yarr[len(xarr) // 2 :]
-    
-    return merge(merge_sort(xleft, yleft), merge_sort(xright, y))
+            xresult.append(xright[j])
+            yresult.append(yright[j])
+            j+= 1
+        if i == len(xleft) or j == len(xright):
+            xresult.extend(xleft[i:] or xright[j:])
+            yresult.extend(yleft[i:] or yright[j:])
+            break 
+
+    return xresult, yresult
+
+def merge_sort(xlist, ylist):
+    if len(xlist) < 2:
+        return xlist, ylist
+
+    middle = len(xlist)/2
+    xleft = merge_sort(xlist[:middle])
+    yleft = merge_sort(ylist[:middle])
+    xright = merge_sort(xlist[middle:])
+    yright = merge_sort(ylist[middle:])
+
+    return merge(xleft, yleft, xright, yright)
+
+def merge_ind():
+    pass
 
 def merge_sort_ind():
     pass
