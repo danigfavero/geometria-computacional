@@ -1,0 +1,12 @@
+# <center> MAC0331 - LISTA 6
+## <center> Daniela Gonzalez Favero - 10277443
+
+**4.** Para fazer o diagrama de Voronoi dos vértices de um polígono regular, é preciso traçar suas mediatrizes (que se encontram no centro da circunferência que circunscreve o polígono). Essas mediatrizes definem o diagrama de Voronoi do conjunto de pontos dado. Isso ocorre por causa da simetria do polígono regular e das propriedades da mediatriz em dividir os lados em partes iguais.  
+  
+Para fazer o grafo de Delaunay dos mesmos vértices, primeiro traçamos as arestas do polígono dado.  Em seguida, basta escolher um vértice e ligá-lo a todos os outros vértices que não são suas arestas. O resultado dessas operações configuram uma triangulação legal porque o polígono regular está circunscrito numa circunferência tal que não importa quais diagonais traçamos no polígono (desde que não se cruzem), as propriedades da triangulação legal sempre serão respeitadas.  
+  
+**5.** Para transformar o grafo de Delaunay DG(P) no diagrama de Voronoi Vor(P), lembremos que pela dualidade dos dois, cada triângulo de DG(P) corresponde a um ponto de Vor(P). A partir disso, podemos obter os vértices do diagrama de Delaunay assim: para cada triângulo de DG(P), obtenha a circunferência que circunscreve esses triângulos; o centro dessas circunferências determinam os vértices de Vor(P).  
+Agora que temos os vértices do diagrama, basta encontrar suas arestas. Essa parte depende do fato de que cada vértice vizinho a outro (ou seja, vértices conectados por uma aresta) no Vor(P) compartilha um lado do triângulo de Delaunay. Deste modo, para encontrar as arestas, percorremos por cada vértice v que temos e o triângulo T de DG(P) associado ao mesmo. Olhe para cada triângulo R vizinho desse triângulo T e seu respectivo vértice u do Vor(P), traçando a aresta uv.  
+
+  
+**6.** Sabemos que se P está em posição geral, DG(P) é a única triangulação ângulo-ótima de P. E que as propriedades para um conjunto de pontos estar na posição geral são: não tem nenhum conjunto de 3 pontos colineares e nem 4 pontos cocirculares. Como temos como restrição o conjunto de 4 pontos cocirculares, basta termos 3 pontos colineares em P para que o grafo de Delaunay tenha um vértice de grau n-1. 
