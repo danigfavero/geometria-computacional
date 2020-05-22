@@ -1,19 +1,14 @@
 from geocomp.common import prim
+from geocomp.common import point
 from geocomp.common import segment
 from geocomp.common import control
 from geocomp import config
 from bintrees import RBTree
-from rbtree import *
-
-
-def area2(a, b, c):
-    '''Recebe 3 pontos e devolve a área do triângulo delimitado pelos pontos
-    multiplicada por 2'''
-    return (a.x * b.y + a.y * c.x + b.x * c.y - b.y * c.x - c.y * a.x - b.x * a.y)
 
 def left(a, b, c):
     '''Verifica se o ponto c está à esquerda ou sobre a reta dada por ab'''
-    return area2(a, b, c) >= 0
+    area2 = (a.x * b.y + a.y * c.x + b.x * c.y - b.y * c.x - c.y * a.x - b.x * a.y)
+    return area2 >= 0
 
 class Event:
     "Ponto evento da linha de varredura"
@@ -25,33 +20,22 @@ class Event:
             self.s1 = list(args)[0]
             self.s2 = list(args)[1]
 
-class Tree(RBTree):
-
-    def insert(self, key, value):
-        return insert_rec(self._root, key, value)
-
-    @staticmethod
-    def insert_rec(root, key, value):
-        if root is None: 
-            node = T._new_node(key, value)
-            return node
-        if key < info(T):
-            root.left = insert_rec(root.left, key, value)
-            root.right = insert_rec(root.right, key, value)
-        if super().is_red(root.right) and super().is_black(root.left):
-            pass # gire esq
-        if super().is_red(root.left) and super().is_red(root.left.left):
-            pass # gire dir
-        if super().is_red(root.left) and super().is_red(root.right):
-            pass # troque cores
-        return root
-
 def Bentley_Ottmann(l):
     ''' Recebe uma coleção de segmentos e devolve o número de interseções
     presente na coleção
     '''
     
     find_intersections(l, len(l))
+
+def find_intersections(l, n):
+    ''' Detecta e processa os pontos eventos da linha de varredura de modo a
+    encontrar todas as intersecções.
+    '''
+    Q = sorted_extremes(l, n)
+    T = RBTree()
+    while not Q.is_empty():
+        p = Q.pop_min()
+        treat_event(p, Q, T)
 
 def sorted_extremes(l, n):
     ''' Ordena os extremos dos n segmentos da lista l
@@ -63,16 +47,6 @@ def sorted_extremes(l, n):
         Q[s.upper] = Event("left", s)
         Q[s.lower] = Event("right", s)
     return Q
-
-def find_intersections(l, n):
-    ''' Detecta e processa os pontos eventos da linha de varredura de modo a
-    encontrar todas as intersecções.
-    '''
-    Q = sorted_extremes(l, n)
-    T = RBTree()
-    while not Q.is_empty():
-        p = Q.pop_min()
-        treat_event(p, Q, T)
 
 def treat_event(p, Q, T):
     ''' Recebe o ponto evento e o trata conforme seu tipo: extremo esquerdo,
@@ -142,5 +116,33 @@ def verify_new_event(p, Q, s1, s2):
 def intersection_point(s1, s2):
     ''' Devolve um ponto no qual dois segmentos se intersectam
     '''
-    # TODO como eu sei qual é o (primeiro) ponto no qual eles se intersectam
-    pass
+    if are_parallel(s1, s2):
+        # A intersecção é um conjunto infinito de pontos
+        # Vamos retornar só um deles
+        if s1.lower.x >= s2.lower.x and s1.lower.x >= s2.upper.x:
+            return s1.lower
+        return s2.lower
+
+    # A intersecção é de apenas um ponto
+    s1_equation = line_equation(s1.upper, s1.lower)
+    s2_equation = line_equation(s2.upper, s2.lower)
+    zn = det(s1_equation[0], s1_equation[1], s2_equation[0], s2_equation[1])
+    x = -det(s1_equation[2], s1_equation[1], s2_equation[2], s2_equation[1]) / zn
+    y = -det(s1_equation[0], s1_equation[2], s2_equation[0], s2_equation[2]) / zn
+    inter = point.Point(x,y)
+    return inter
+
+
+def line_equation(p, q):
+    a = p.y - q.y
+    b = q.x - p.x
+    c = - a * p.x - b * p.y
+    return a, b, c
+
+def det(a, b, c, d):
+    return a * d - b * c
+
+def are_parallel(s1, s2):
+    s1_slope = (s1.upper.y - s1.lower.y) / (s1.upper.x - s1.lower.x)
+    s2_slope = (s2.upper.y - s2.lower.y) / (s2.upper.x - s2.lower.x)
+    return s1_slope == s2_slope
