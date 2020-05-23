@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+ 
 from . import control
 from geocomp import config
 from .prim import area2, left
@@ -53,7 +53,7 @@ class Segment:
         "desenha o segmento de reta na tela"
         self.lid = self.init.lineto (self.to, cor)
         return self.lid
-
+            
     def hide (self, id=None):
         "apaga o segmento de reta da tela"
         if id is None: id = self.lid
@@ -100,7 +100,7 @@ class Segment:
                or self.has_inside(other_segment.to)   \
                or other_segment.has_inside(self.init) \
                or other_segment.has_inside(self.to)
-
+       
     def adj(self, p):
         if p == self.init:
             return self.to
@@ -110,17 +110,17 @@ class Segment:
         return hash(self.init) ^ hash(self.to)
 
     def __cmp(self, a, b):
-        if(type(a) != Segment or type(b) != Segment):
-            return 1
-        if a[1] > b[1]:
-            return -1
-        if b[1] > a[1]:
-            return 1
-        if a[0] < b[0]:
-            return -1
-        if b[0] < a[0]:
-            return 1
-        return 0
+       if(type(a) != Segment or type(b) != Segment):
+           return 1
+       if a[1] > b[1]:
+           return -1
+       if b[1] > a[1]:
+           return 1
+       if a[0] < b[0]:
+           return -1
+       if b[0] < a[0]:
+           return 1
+       return 0
 
     # TODO: Teste de contains testa se ponto é uma das pontas da
     # aresta, mas faz mais sentido ver se o ponto estar dentro da
@@ -150,3 +150,22 @@ class Segment:
     @p1.setter
     def p2(self, p2):
         self.init = p2
+
+    """
+    Ordem dada pela esquerda, utilizando o ponto de intersecção entre dois segmentos
+    PS: Usado no projeto de Bento Pereira e Daniela Favero para detectar todas
+    as intersecções de segmentos
+    """
+    def __lt__(self, other):
+        if type(self) != type(other):
+            return False
+        if other.has_left(self.lower):
+            return True
+        return False
+
+    def __le__(self, other):
+        if type(self) != type(other):
+            return False
+        if other.has_left(self.lower) or (other.lower == self.self.lower and self.upper.y < other.supper.y):
+            return True
+        return False 

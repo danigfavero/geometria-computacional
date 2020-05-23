@@ -143,17 +143,15 @@ class Point:
         return True
 
     
-
+            
     """
     Ordem dada por x, usando y para desempatar
-    PS: Usado no projeto de Daniela Favero para detectar todas as intersecções
-    de segmentos
-    """
+    PS: Usado no projeto de Bento Pereira e Daniela Favero para detectar todas
+    as intersecções de segmentos
+    """ 
     def __lt__(self, other):
         if type(self) != type(other):
             return False
-        if self is other:
-            return True
         if self.x < other.x:
             return True
         if self.x > other.x:
@@ -165,8 +163,6 @@ class Point:
     def __le__(self, other):
         if type(self) != type(other):
             return False
-        if self is other:
-            return True
         if self.x < other.x:
             return True
         if self.x > other.x:
