@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Algoritmo aleatorizado"""
-
+ 
 from geocomp.common.segment import Segment
 from geocomp.common import control
 from geocomp.common.guiprim import *
@@ -14,6 +14,26 @@ def square_id(p, delta, offset):
     aux = math.sqrt(delta)
     return math.floor((2*(p.x + offset))/aux), math.floor((2*(p.y+offset))/aux)
 
+def build_grid(delta, offset, extreme, old_grid):
+        control.freeze_update()
+        if len(old_grid) > 0:
+            for line in old_grid:
+                control.plot_delete(line)
+        
+        new_grid = []
+        excess = 100
+        x = offset - excess
+        while x < extreme + excess:
+            id1 = control.plot_vert_line(x, 'cyan')
+            id2 = control.plot_horiz_line(x, 'cyan')
+            new_grid.append(id1)
+            new_grid.append(id2)
+            x +=  math.sqrt(delta)/2
+            
+        control.thaw_update() 
+        control.update()
+        return new_grid
+       
 def Prob (l):
     """Algoritmo probabilístico para encontrar o par de pontos mais próximo
     """
@@ -22,11 +42,16 @@ def Prob (l):
     shuffle(l)
     
     offset = float("inf")
+    extreme = -float("inf")
     for p in l:
         offset = min(offset, p.x, p.y)
+        extreme = max(extreme, p.x, p.y)
     offset = min(0, offset)
+    extreme = max(extreme, -offset)
     
     delta = dist2(l[0], l[1])
+    grid = []
+    grid = build_grid(delta, offset, extreme, grid)
     S = {}
     S[square_id(l[0], delta, offset)] = 0
     S[square_id(l[1], delta, offset)] = 1
@@ -77,6 +102,7 @@ def Prob (l):
             S.clear()
             for j in range(0, i + 1):
                 S[square_id(l[j], delta, offset)] = j
+            grid = build_grid(delta, offset, extreme, grid)
         else:
             S[current_id] = i
 
