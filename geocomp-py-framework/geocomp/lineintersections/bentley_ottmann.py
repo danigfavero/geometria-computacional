@@ -5,7 +5,8 @@ from geocomp.common import control
 from geocomp.common.prim import area2, left
 from geocomp import config
 from bintrees import RBTree
-
+from .my_tree import MyTree
+    
 class Event:
     "Ponto evento da linha de varredura"
     def __init__(self, t, *args):
@@ -27,7 +28,7 @@ def find_intersections(l, n):
     encontrar todas as intersecções.
     '''
     Q = sorted_extremes(l, n)
-    T = RBTree()
+    T = MyTree()
     while not Q.is_empty():
         p = Q.pop_min()
         treat_event(p, Q, T)
@@ -109,8 +110,8 @@ def treat_event(p, Q, T):
         # Insere ao contrário FIXME
         new_s1 = segment.Segment(intersection, s1.upper)
         new_s2 = segment.Segment(intersection, s2.upper)
-        T[new_s2] = new_s2
-        T[new_s1] = new_s1
+        T[s2] = new_s2
+        T[s1] = new_s1
         if pred != None and pred.intersects(s2):
             verify_new_event(point, Q, pred, s2, intersection)
         if succ != None and s1.intersects(succ):
@@ -126,10 +127,12 @@ def treat_event(p, Q, T):
         print(str(seg))
     print("")
            
-def verify_new_event(p, Q, s1, s2, intersection):
+def verify_new_event(p, Q, s1, s2, inter=None):
     ''' Verifica novo evento e registra intersecção
     '''
-    q = intersection
+    if inter == None:
+        inter = intersection_point(s1, s2)
+    q = inter
     if q > p and q not in Q:
         Q[q] = Event("inter", s1, s2)
         print(q)
