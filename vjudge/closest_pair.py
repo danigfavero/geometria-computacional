@@ -1,90 +1,78 @@
 import math
 
-###########mergesort carinhosamente inspirado pela internet############# 
-def merge(xleft, yleft, xright, yright):
-    if not len(xleft) or not len(xright):
-        return (xleft, yleft) or (xright, yright)
-
-    xresult = []
-    yresult = []
-    i, j = 0, 0
-    while (len(xresult) < len(xleft) + len(xright)):
-        if xleft[i] < xright[j]:
-            xresult.append(xleft[i])
-            yresult.append(yleft[i])
-            i+= 1
-        else:
-            xresult.append(xright[j])
-            yresult.append(yright[j])
-            j+= 1
-        if i == len(xleft) or j == len(xright):
-            xresult.extend(xleft[i:] or xright[j:])
-            yresult.extend(yleft[i:] or yright[j:])
-            break 
-
-    return xresult, yresult
-
-def merge_sort(xlist, ylist):
-    if len(xlist) < 2:
-        return xlist, ylist
-
-    middle = len(xlist)/2
-    xleft = merge_sort(xlist[:middle])
-    yleft = merge_sort(ylist[:middle])
-    xright = merge_sort(xlist[middle:])
-    yright = merge_sort(ylist[middle:])
-
-    return merge(xleft, yleft, xright, yright)
-
-def merge_ind():
-    pass
-
-def merge_sort_ind():
-    pass
-
 def distancia_sh(X, Y, n):
-    merge_sort(X, Y, 1, n)
-    a = [i for i in range(1, n)]
-    merge_sort_ind(Y, 1, n, a) # ordenação indireta
-    return distancia_rec_sh(X, Y, a, 1, n)
+    zipado = list(zip(X,Y))
+    zipado2 = sorted(zipado)
+    deszipado = list(zip(*zipado2))
+    return distancia_rec_sh(list(deszipado[0]), list(deszipado[1]), 1, n)
 
-def distancia_rec_sh(X, Y, a, p, r):
+def distancia_rec_sh(X, Y, p, r):
     if r <= p + 2:
-        pass # resolva o problema diretamente
-    else:
-        q = (p + r)//2
-        b = divida(X, Y, a, p, r)
-        de = distancia_rec_sh(X, Y, b, p, q)
-        dd = distancia_rec_sh(X, Y, b, q + 1, r)
-        return combine(X, Y, a, p, r, de, dd)
+        return brute_force(X, Y, p, r)
+    q = (p + r)//2
+    de = distancia_rec_sh(X, Y, p, q)
+    dd = distancia_rec_sh(X, Y, q + 1, r)
+    intercale(X, Y, p, q, r)
+    return combine(X, Y, p, r, de, dd)
 
-def divida(X, Y, a, p, r):
-    q = (p + r) // 2
-    i = p - 1
-    j = q
-    b = [0 for i in range(r - p)] # certeza?
-    for k in range (p, r):
-        if a[k] <= p: # (X[a[k]], Y [a[k]]) está à esquerda da reta x = X[q]?
+def brute_force(X, Y, p, r):
+    dist = 10000
+    X2 = X[p:r+1]
+    Y2 = Y[p:r+1]
+    zipado = list(zip(X2,Y2))
+    zipado2 = sorted(zipado, key=lambda x:x[1])
+    deszipado = list(zip(*zipado2))
+    X2 = list(deszipado[0])
+    Y2 = list(deszipado[1])
+
+    for i in range(p, r+1):
+        X[i] = X2[i-p]
+        Y[i] = Y2[i-p]
+
+    for i in range(p, r+1):
+        for j in range(i+1, r+1):
+            aux = distancia(X[i], Y[i], X[j], Y[j])
+            if aux < dist:
+                dist = aux
+    return dist
+
+def distancia(xa, ya, xb, yb):
+    return math.sqrt((xb - xa)**2 + (yb - ya)**2)
+
+def intercale(X, Y, p, q, r):
+    i = p 
+    j = q + 1
+    X2 = []
+    Y2 = []
+    while i <= q and j <= r:
+
+        while i <= q and Y[i] <= Y[j]:
+            X2.append(X[i])
+            Y2.append(Y[i])
             i += 1
-            b[i] = a[k]
-        else:
+
+        while j <= r and Y[j] <= Y[i]:
+            X2.append(X[j])
+            Y2.append(Y[j])
             j += 1
-            b[j] = a[k]
-    return b
+    
+    while i <= q:
+        X2.append(X[i])
+        Y2.append(Y[i])
+        i += 1
 
-def candidatos(X, a, p, r, d):
-    q = (p + r) // 2
-    t = 0
-    f = [0 for i in range(r - p)] # certeza?
-    for k in range(p, r):
-        if abs(X[a[k]] - X[q]) < d:
-            t += 1
-            f[t] = a[k]
-    return f,t
+    while j <= r:
+        X2.append(X[j])
+        Y2.append(Y[j])
+        j += 1
+    
+    for i in range(p, r+1):
+        X[i] = X[i-p]
+        Y[i] = Y[i-p]
 
-def combine(X, Y, a, p, r, de, dd):
+def combine(X, x, Y, p, r, de, dd):
     d = min(de,dd)
-    (f,t) = candidatos(X, a, p, r, d)
+    (f,t) = candidatos(X, x, p, r, d)
     for i in range(1, t-1):
         for j in range(i+1, min(i+7, t)):
             dlinha = distancia(X[f[i]], Y[f[i]], X[f[j]], Y[f[j]])
@@ -92,8 +80,15 @@ def combine(X, Y, a, p, r, de, dd):
                 d = dlinha
     return d
 
-def distancia(xa, ya, xb, yb):
-    return math.sqrt((xb - xa)**2 + (yb - ya)**2)
+def candidatos(X, x, p, r, d):
+    q = (p + r) // 2
+    t = 0
+    f = [0 for i in range(p, r+1)]
+    for k in range(p, r+1):
+        if abs(x - X[k]) < d:
+            f[t] = X[k]
+            t += 1
+    return f, t
 
 def main():
     n = int(input())
@@ -101,8 +96,14 @@ def main():
         X = []
         Y = []
         for i in range(n):
-            coord = input().split
+            coord = input().split()
             X.append(int(coord[0]))
             Y.append(int(coord[1]))
-        print(distancia_sh(X, Y, n))
+        d = distancia_sh(X, Y, n)
+        if d > 10000:
+            print("INFINITY")
+        else:    
+            print(d)
         n = int(input())
+
+main()
