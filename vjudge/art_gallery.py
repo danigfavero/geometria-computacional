@@ -1,8 +1,8 @@
-def is_convex(gallery, n):
+def contains_critical_point(gallery, n):
     if (n < 4):
-        return True
+        return False
 
-    sign = False
+    sign = True
     for i in range(n):
         j = (i + 1) % n
         k = (i + 2) % n
@@ -15,12 +15,8 @@ def is_convex(gallery, n):
         if i == 0:
             sign = zcrossproduct > 0
         elif sign != (zcrossproduct > 0):
-            return False
-    return True
-
-
-def contains_critical_point(gallery, n):
-    return is_convex(gallery, n)
+            return True
+    return False
 
 def main():
     n = int(input())
@@ -32,9 +28,9 @@ def main():
             y = int(coord[1])
             gallery.append((x,y))
         if contains_critical_point(gallery, n):
-            print("YES")
+            print("Yes")
         else:    
-            print("NO")
+            print("No")
         n = int(input())
 
 main()
