@@ -6,7 +6,9 @@ from geocomp.common.prim import area2, left
 from geocomp import config
 from bintrees import RBTree
 from .my_tree import MyTree
-    
+
+dic = {}
+
 class Event:
     "Ponto evento da linha de varredura"
     def __init__(self, t, *args):
@@ -16,6 +18,12 @@ class Event:
         if t == "inter":
             self.s1 = list(args)[0]
             self.s2 = list(args)[1]
+    def __str__(self):
+        if self.t == "inter":
+            s = "tipo: " + str(self.t) + " seg: " + str(self.s1) + str(self.s2)
+        else:
+            s = "tipo: " + str(self.t) + " seg: " + str(self.s)
+        return s 
 
 def Bentley_Ottmann(l):
     ''' Recebe uma coleção de segmentos e devolve o número de interseções
@@ -28,7 +36,7 @@ def find_intersections(l, n):
     encontrar todas as intersecções.
     '''
     Q = sorted_extremes(l, n)
-    T = MyTree()
+    T = RBTree()
     while not Q.is_empty():
         p = Q.pop_min()
         treat_event(p, Q, T)
@@ -38,6 +46,7 @@ def sorted_extremes(l, n):
     '''
     Q = RBTree()
     for s in l:
+        dic[s] = s
         if s.upper == s.lower:
             pass # TODO corner case!!!
         Q[s.lower] = Event("left", s)
@@ -48,12 +57,13 @@ def treat_event(p, Q, T):
     ''' Recebe o ponto evento e o trata conforme seu tipo: extremo esquerdo,
     extremo direito e ponto de intersecção. 
     '''
-    print("ANTES")
-    for seg in T:
-        print(str(seg))
-
     event = p[1]
     point = p[0]
+
+    print(event, end="\n\n")
+    print("ANTES")
+    for seg in T:
+        print("key: ", str(seg))
     
     linea = 0
     point.hilight("green")
@@ -64,26 +74,26 @@ def treat_event(p, Q, T):
         control.sleep() 
         control.update()
         try:
-            pred = T.prev_item(s)[0]
+            pred = T[T.prev_key(s)]
             if s.intersects(pred):
                 verify_new_event(point, Q, s, pred)
         except KeyError:
             pass
         try:
-            succ = T.succ_item(s)[0]
+            succ = T[T.succ_key(s)]
             if s.intersects(succ):
                 verify_new_event(point, Q, s, succ)
         except KeyError:
             pass
 
     if event.t == "right":
-        s = event.s
+        s = dic[event.s]
         linea = control.plot_vert_line(s.upper.x, "cyan")
         control.sleep()
         control.update()
         try:
-            pred = T.prev_item(s)[0]
-            succ = T.succ_item(s)[0]
+            pred = T[T.prev_key(s)]
+            succ = T[T.succ_key(s)]
             T.pop(s)
             if pred.intersects(succ):
                 verify_new_event(point, Q, succ, pred)
@@ -93,25 +103,32 @@ def treat_event(p, Q, T):
     if event.t == "inter":
         s1 = event.s1
         s2 = event.s2
+        rs1 = dic[s1]
+        rs2 = dic[s2]
         intersection = intersection_point(s1,s2)
         linea = control.plot_vert_line(intersection.x, "cyan")
         control.sleep()
         control.update()
         try:
-            pred = T.prev_item(s1)[0]
+            pred = T[T.prev_key(rs1)]
         except KeyError:
             pred = None
         try:
-            succ = T.succ_item(s2)[0]
+            succ = T[T.succ_key(rs2)]
         except KeyError:
             succ = None
-        T.pop(s1)
-        T.pop(s2)
-        # Insere ao contrário FIXME
+        print("s1: ", s1, " rs1: ", rs1)
+        print("s2: ", s2, " rs2: ", rs2, "\n")
+        T.pop(rs1)
+        T.pop(rs2)
+        # Insere ao contrário
         new_s1 = segment.Segment(intersection, s1.upper)
         new_s2 = segment.Segment(intersection, s2.upper)
-        T[s2] = new_s2
-        T[s1] = new_s1
+        T[new_s2] = s2
+        T[new_s1] = s1
+        dic[s1] = new_s1
+        dic[s2] = new_s2
+        
         if pred != None and pred.intersects(s2):
             verify_new_event(point, Q, pred, s2, intersection)
         if succ != None and s1.intersects(succ):
@@ -124,7 +141,7 @@ def treat_event(p, Q, T):
 
     print("DEPOIS")
     for seg in T:
-        print(str(seg))
+        print("key: ", str(seg))
     print("")
            
 def verify_new_event(p, Q, s1, s2, inter=None):
@@ -134,7 +151,7 @@ def verify_new_event(p, Q, s1, s2, inter=None):
         inter = intersection_point(s1, s2)
     q = inter
     if q > p and q not in Q:
-        Q[q] = Event("inter", s1, s2)
+        Q[q] = Event("inter", s1, s2) 
         print(q)
 
 def intersection_point(s1, s2):

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
- 
+     
 from . import control
 from geocomp import config
 from .prim import area2, left
 
-
+            
 class Segment:
     "Um segmento de reta"
     def __init__ (self, pto_from=None, pto_to=None):
@@ -156,16 +156,24 @@ class Segment:
     PS: Usado no projeto de Bento Pereira e Daniela Favero para detectar todas
     as intersecções de segmentos
     """
+
+    def new_left(self, other):
+        if(area2 (self.lower, self.upper, other.lower) > 0):
+            return True
+        elif(area2 (self.lower, self.upper, other.lower) == 0 and other.upper > other.lower):
+            return True
+        return False
+
     def __lt__(self, other):
         if type(self) != type(other):
             return False
-        if other.has_left(self.lower):
+        if other.new_left(self):
             return True
         return False
 
     def __le__(self, other):
         if type(self) != type(other):
             return False
-        if other.has_left(self.lower) or (other.lower == self.self.lower and self.upper.y < other.supper.y):
+        if other.has_left(self.lower) or (other.lower == self.lower and self.upper.y < other.upper.y):
             return True
         return False 
