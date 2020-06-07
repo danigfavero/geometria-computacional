@@ -1,106 +1,91 @@
-import math
+from math import sqrt
 
-def distancia_sh(X, Y, n):
-    zipado = list(zip(X,Y))
-    zipado2 = sorted(zipado)
-    deszipado = list(zip(*zipado2))
-    return distancia_rec_sh(list(deszipado[0]), list(deszipado[1]), 1, n)
+def distancia_sh(points, n):
+    points.sort(key=lambda x:x[0])
+    return sqrt(distancia_rec_sh(points, 0, n-1))
 
-def distancia_rec_sh(X, Y, p, r):
+def distancia_rec_sh(points, p, r):
     if r <= p + 2:
-        return brute_force(X, Y, p, r)
+        return brute_force(points, p, r)
     q = (p + r)//2
-    de = distancia_rec_sh(X, Y, p, q)
-    dd = distancia_rec_sh(X, Y, q + 1, r)
-    intercale(X, Y, p, q, r)
-    return combine(X, Y, p, r, de, dd)
+    de = distancia_rec_sh(points, p, q)
+    dd = distancia_rec_sh(points, q + 1, r)
+    intercale(points, p, q, r)
+    return combine(points, points[q][0], p, r, de, dd)
 
-def brute_force(X, Y, p, r):
-    dist = 10000
-    X2 = X[p:r+1]
-    Y2 = Y[p:r+1]
-    zipado = list(zip(X2,Y2))
-    zipado2 = sorted(zipado, key=lambda x:x[1])
-    deszipado = list(zip(*zipado2))
-    X2 = list(deszipado[0])
-    Y2 = list(deszipado[1])
+def brute_force(points, p, r):
+    dist = 10000.0 ** 2
+    brute = points[p:r+1]
+    brute.sort(key=lambda x:x[1])
 
     for i in range(p, r+1):
-        X[i] = X2[i-p]
-        Y[i] = Y2[i-p]
+        points[i] = brute[i-p]
 
     for i in range(p, r+1):
         for j in range(i+1, r+1):
-            aux = distancia(X[i], Y[i], X[j], Y[j])
+            aux = distancia2(points[i], points[j])
             if aux < dist:
                 dist = aux
     return dist
 
-def distancia(xa, ya, xb, yb):
-    return math.sqrt((xb - xa)**2 + (yb - ya)**2)
+def distancia2(a, b):
+    return (b[0] - a[0])**2 + (b[1] - a[1])**2
 
-def intercale(X, Y, p, q, r):
+def intercale(points, p, q, r):
     i = p 
     j = q + 1
-    X2 = []
-    Y2 = []
-    while i <= q and j <= r:
+    intercalado = []
 
-        while i <= q and Y[i] <= Y[j]:
-            X2.append(X[i])
-            Y2.append(Y[i])
+    while i <= q and j <= r:
+        while i <= q and points[i][1] <= points[j][1]:
+            intercalado.append(points[i])
             i += 1
 
-        while j <= r and Y[j] <= Y[i]:
-            X2.append(X[j])
-            Y2.append(Y[j])
+        while j <= r and points[j][1] <= points[i][1]:
+            intercalado.append(points[j])
             j += 1
     
     while i <= q:
-        X2.append(X[i])
-        Y2.append(Y[i])
+        intercalado.append(points[i])
         i += 1
 
     while j <= r:
-        X2.append(X[j])
-        Y2.append(Y[j])
+        intercalado.append(points[j])
         j += 1
     
     for i in range(p, r+1):
-        X[i] = X[i-p]
-        Y[i] = Y[i-p]
+        points[i] = intercalado[i-p]
 
-def combine(X, x, Y, p, r, de, dd):
+def combine(points, x, p, r, de, dd):
     d = min(de,dd)
-    (f,t) = candidatos(X, x, p, r, d)
-    for i in range(1, t-1):
+    (f,t) = candidatos(points, x, p, r, d)
+    for i in range(t):
         for j in range(i+1, min(i+7, t)):
-            dlinha = distancia(X[f[i]], Y[f[i]], X[f[j]], Y[f[j]])
+            dlinha = distancia2(f[i], f[j])
             if dlinha < d:
                 d = dlinha
     return d
 
-def candidatos(X, x, p, r, d):
-    q = (p + r) // 2
+def candidatos(points, x, p, r, d):
     t = 0
     f = [0 for i in range(p, r+1)]
     for k in range(p, r+1):
-        if abs(x - X[k]) < d:
-            f[t] = X[k]
+        if abs(x - points[k][0]) < d:
+            f[t] = points[k]
             t += 1
     return f, t
 
 def main():
     n = int(input())
     while n != 0:
-        X = []
-        Y = []
+        points = []
         for i in range(n):
             coord = input().split()
-            X.append(int(coord[0]))
-            Y.append(int(coord[1]))
-        d = distancia_sh(X, Y, n)
-        if d > 10000:
+            x = int(coord[0])
+            y = int(coord[1])
+            points.append((x,y))
+        d = distancia_sh(points, n)
+        if d >= 10000:
             print("INFINITY")
         else:    
             print(d)
