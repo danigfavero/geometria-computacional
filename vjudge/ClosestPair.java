@@ -125,7 +125,7 @@ public class ClosestPair {
             if (d >= 10000) {
                 System.out.println("INFINITY");
             } else {
-                System.out.println(d);
+                System.out.format("%.4f%n", d);
             }
             n = Integer.parseInt(s.nextLine());
         }

@@ -65,7 +65,7 @@ def main():
         if d >= 10000:
             print("INFINITY")
         else:    
-            print(d)
+            print(format(d, '.4f'))
         n = int(input())
 
 main()
