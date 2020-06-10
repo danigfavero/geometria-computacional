@@ -12,6 +12,7 @@ def fecho_convexo(pontos):
         return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
 
     def esquerda(fecho, r):
+        perimetro = 0
         while len(fecho) > 1 and vira(fecho[-2], fecho[-1], r) != 1:
             fecho.pop()
         if not len(fecho) or fecho[-1] != r:
@@ -38,12 +39,15 @@ def main():
         print(f'Region #{contador}:')
         contador += 1
         fecho = fecho_convexo(pontos)
-        perimetro = 0
         print(f'({fecho[0][0]},{fecho[0][1]})', end='')
         for ponto in reversed(fecho):
             print(f'-({ponto[0]},{ponto[1]})', end='', sep='')
         print("")
-        print(f'Perimeter length = {perimetro}')
+        perimetro = 0
+        m = len(fecho)
+        for i in range(m):
+            perimetro += distancia(fecho[i], fecho[(i+1)%m])
+        print("Perimeter length = {:.2f}\n".format(perimetro))
         
         n = int(input())
 
