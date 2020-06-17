@@ -1,18 +1,56 @@
-import itertools
+import functools
+import math
 
-def is_inside(x1, y1, x2, y2, x3, y3, x, y): 
-    side_1 = (x - x2) * (y1 - y2) - (x1 - x2) * (y - y2)
-    side_2 = (x - x3) * (y2 - y3) - (x2 - x3) * (y - y3)
-    side_3 = (x - x1) * (y3 - y1) - (x3 - x1) * (y - y1)
-    return (side_1 < 0.0) == (side_2 < 0.0) == (side_3 < 0.0)
+def is_within_polygon(polygon, point):
+    A = []
+    B = []
+    C = []  
+    for i in range(len(polygon)):
+        p1 = polygon[i]
+        p2 = polygon[(i + 1) % len(polygon)]
+        a = -(p2[1] - p1[1])
+        b = p2[0] - p1[0]
+        c = -(a * p1[0] + b * p1[1])
+
+        A.append(a)
+        B.append(b)
+        C.append(c)
+
+    D = []
+    for i in range(len(A)):
+        d = A[i] * point[0] + B[i] * point[1] + C[i]
+        D.append(d)
+
+    t1 = all(d >= 0 for d in D)
+    t2 = all(d <= 0 for d in D)
+    return t1 or t2
+
+def convex_hull(points): 
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
+    def turn(p, q, r):
+        return cmp((q[0] - p[0])*(r[1] - p[1]) - (r[0] - p[0])*(q[1] - p[1]), 0)
+
+    def left(hull, r):
+        perimetro = 0
+        while len(hull) > 1 and turn(hull[-2], hull[-1], r) != 1:
+            hull.pop()
+        if not len(hull) or hull[-1] != r:
+            hull.append(r)
+        return hull
+
+    points = sorted(points)
+    l = functools.reduce(left, points, [])
+    u = functools.reduce(left, reversed(points), [])
+    return l.extend(u[i] for i in range(1, len(u) - 1)) or l
 
 def saint_john(large, L, small, S):
+    hull = convex_hull(large)
     n = 0
-    for s in small:
-        for t in itertools.combinations(large, 3):
-            if is_inside(t[0][0], t[0][1], t[1][0], t[1][1], t[2][0], t[2][1], s[0], s[1]):
-                n += 1
-                break
+    for s in small: 
+        if is_within_polygon(hull, s):
+            n += 1
     return n
 
 def main():
