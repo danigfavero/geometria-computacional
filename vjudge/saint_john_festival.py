@@ -1,29 +1,33 @@
 import functools
 import math
 
-def is_within_polygon(polygon, point):
-    A = []
-    B = []
-    C = []  
-    for i in range(len(polygon)):
-        p1 = polygon[i]
-        p2 = polygon[(i + 1) % len(polygon)]
-        a = -(p2[1] - p1[1])
-        b = p2[0] - p1[0]
-        c = -(a * p1[0] + b * p1[1])
 
-        A.append(a)
-        B.append(b)
-        C.append(c)
+def left (a, b, c):
+    return (b[0] - a[0])*(c[1] - a[1]) - (b[1] - a[1])*(c[0] - a[0]) > 0
 
-    D = []
-    for i in range(len(A)):
-        d = A[i] * point[0] + B[i] * point[1] + C[i]
-        D.append(d)
+def area(a, b, c): 
+    return abs((a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1])  + c[0] * (a[1] - b[1])) / 2.0) 
 
-    t1 = all(d >= 0 for d in D)
-    t2 = all(d <= 0 for d in D)
-    return t1 or t2
+def is_inside_triangle(a, b, c, p): 
+    A = area(a, b, c)  
+    A1 = area(p, b, c)  
+    A2 = area(a, p, c) 
+    A3 = area(a, b, p) 
+    
+    return A == A1 + A2 + A3
+
+def is_inside_polygon(polygon, point):
+    n = len(polygon)
+    if n == 3:
+        return is_inside_triangle(polygon[0], polygon[1], polygon[2], point)
+    if n == 4:
+        return is_inside_triangle(polygon[0], polygon[1], polygon[2], point) or \
+        is_inside_triangle(polygon[0], polygon[2], polygon[3], point)
+
+    mid = n//2
+    if left(polygon[0], polygon[mid], point):
+        return is_inside_polygon(polygon[:mid], point)
+    return is_inside_polygon(polygon[mid:], point)
 
 def convex_hull(points): 
     def cmp(a, b):
@@ -47,9 +51,10 @@ def convex_hull(points):
 
 def saint_john(large, L, small, S):
     hull = convex_hull(large)
+    hull.sort()
     n = 0
     for s in small: 
-        if is_within_polygon(hull, s):
+        if is_inside_polygon(hull, s):
             n += 1
     return n
 
