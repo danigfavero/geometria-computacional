@@ -13,7 +13,7 @@ def is_inside_triangle(a, b, c, p):
     A1 = area(p, b, c)  
     A2 = area(a, p, c) 
     A3 = area(a, b, p) 
-    
+
     return A == A1 + A2 + A3
 
 def is_inside_polygon(polygon, point):
@@ -22,7 +22,7 @@ def is_inside_polygon(polygon, point):
         return is_inside_triangle(polygon[0], polygon[1], polygon[2], point)
     if n == 4:
         return is_inside_triangle(polygon[0], polygon[1], polygon[2], point) or \
-        is_inside_triangle(polygon[0], polygon[2], polygon[3], point)
+        is_inside_triangle(polygon[0], polygon[1], polygon[3], point)
 
     mid = n//2
     if left(polygon[0], polygon[mid], point):
