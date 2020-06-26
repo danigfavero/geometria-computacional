@@ -16,18 +16,17 @@ def is_inside_triangle(a, b, c, p):
 
     return A == A1 + A2 + A3
 
-def is_inside_polygon(polygon, point):
-    n = len(polygon)
-    if n == 3:
-        return is_inside_triangle(polygon[0], polygon[1], polygon[2], point)
-    if n == 4:
-        return is_inside_triangle(polygon[0], polygon[1], polygon[2], point) or \
-        is_inside_triangle(polygon[0], polygon[1], polygon[3], point)
+def is_inside_polygon(polygon, begin, end, point):
+    if (end - begin + 1) == 3:
+        return is_inside_triangle(polygon[begin], polygon[begin + 1], polygon[begin + 2], point)
+    if (end - begin + 1) == 4:
+        return is_inside_triangle(polygon[begin], polygon[begin + 1], polygon[begin + 2], point) or \
+        is_inside_triangle(polygon[begin], polygon[begin + 2], polygon[begin + 3], point)
 
-    mid = n//2
-    if left(polygon[0], polygon[mid], point):
-        return is_inside_polygon(polygon[:mid], point)
-    return is_inside_polygon(polygon[mid:], point)
+    mid = (begin + end)//2
+    if left(polygon[begin], polygon[mid], point):
+        return is_inside_polygon(polygon, begin, mid, point)
+    return is_inside_polygon(polygon, mid, end, point)
 
 def convex_hull(points): 
     def cmp(a, b):
@@ -49,12 +48,13 @@ def convex_hull(points):
     u = functools.reduce(left, reversed(points), [])
     return l.extend(u[i] for i in range(1, len(u) - 1)) or l
 
+
 def saint_john(large, L, small, S):
     hull = convex_hull(large)
-    hull.sort()
     n = 0
+    size = len(hull)
     for s in small: 
-        if is_inside_polygon(hull, s):
+        if is_inside_polygon(hull, 0, size - 1, s):
             n += 1
     return n
 
