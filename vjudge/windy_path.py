@@ -38,7 +38,7 @@ def windy_path(obstacles, n, directions):
         aux[i + 1], aux[choice] = aux[choice], aux[i + 1]
 
     for i in aux:
-        print(i, end='')
+        print(i, end=' ')
     print('')
 
 def main():
