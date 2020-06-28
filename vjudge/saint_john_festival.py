@@ -1,9 +1,14 @@
 import functools
 import math
 
+def tuple_subtraction(t1, t2):
+    return t1[0] - t2[0], t1[1] - t2[1]
 
-def left (a, b, c):
-    return (b[0] - a[0])*(c[1] - a[1]) - (b[1] - a[1])*(c[0] - a[0]) > 0
+def cross(a, b):
+    return a[0] * b[1] - a[1] * b[0]
+
+def signed_area_parallelogram(a, b, c):
+    return cross(tuple_subtraction(b, a), tuple_subtraction(c, b))
 
 def area(a, b, c): 
     return abs((a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1])  + c[0] * (a[1] - b[1])) / 2.0) 
@@ -17,16 +22,26 @@ def is_inside_triangle(a, b, c, p):
     return A == A1 + A2 + A3
 
 def is_inside_polygon(polygon, begin, end, point):
-    if (end - begin + 1) == 3:
-        return is_inside_triangle(polygon[begin], polygon[begin + 1], polygon[begin + 2], point)
-    if (end - begin + 1) == 4:
-        return is_inside_triangle(polygon[begin], polygon[begin + 1], polygon[begin + 2], point) or \
-        is_inside_triangle(polygon[begin], polygon[begin + 2], polygon[begin + 3], point)
+    n = end - begin + 1
+    eps = 1e-9
+    if n < 3:
+        return False
+    if signed_area_parallelogram(polygon[0], point, polygon[1]) > eps:
+        return False
+    if signed_area_parallelogram(polygon[0], point, polygon[n - 1]) < -eps:
+        return False
 
-    mid = (begin + end)//2
-    if left(polygon[begin], polygon[mid], point):
-        return is_inside_polygon(polygon, begin, mid, point)
-    return is_inside_polygon(polygon, mid, end, point)
+    l = 2
+    r = n - 1
+    line = -1
+    while l <= r:
+        mid = (l+r)//2
+        if signed_area_parallelogram(polygon[0], point, polygon[mid]) > -eps:
+            line = mid
+            r = mid - 1
+        else:
+            l = mid + 1
+    return signed_area_parallelogram(polygon[line - 1], point, polygon[line]) < eps
 
 def convex_hull(points): 
     def cmp(a, b):
@@ -47,7 +62,6 @@ def convex_hull(points):
     l = functools.reduce(left, points, [])
     u = functools.reduce(left, reversed(points), [])
     return l.extend(u[i] for i in range(1, len(u) - 1)) or l
-
 
 def saint_john(large, L, small, S):
     hull = convex_hull(large)
