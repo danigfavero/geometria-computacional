@@ -6,11 +6,9 @@ Dado um conjunto de pontos S, determinar dois cuja distancia entre eles seja min
 Algoritmos disponveis:
 - Forca bruta
 """
-from . import brute
 from . import prob
 
 children = [
-	[ 'brute', 'Brute', 'Forca Bruta' ],
 	[ 'prob', 'Prob', 'Probabilistico']
 ]
 

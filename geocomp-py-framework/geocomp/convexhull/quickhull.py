@@ -10,7 +10,7 @@ from geocomp.common.prim import right, area2, left
 
 def area(a, b, c):
     '''Devolve a área do triângulo cujos extremos são os pontos a, b, c.'''
-    return abs(area2/2.0)
+    return abs(area2(a, b, c)/2.0)
 
 def extreme(P, p, r):
     '''Recebe P e, usando area, devolve o índice de um ponto extremo da coleção
@@ -83,8 +83,8 @@ def Quickhull(P):
 
     i = 1
     for j in range(2, n):
-        if right(0, P[i], P[j]):
+        if right(P[0], P[i], P[j]):
             i = j
-    P[n], P[i] = P[i], P[n]
+    P[n - 1], P[i] = P[i], P[n - 1]
 
     return quickhull_rec(P, 0, n-1)

@@ -21,5 +21,5 @@ Implementação do algoritmo Quickhull para fecho convexo 2D. Em `geocomp-py-fra
 - Closest Pair
 - Polygon
 - Moth Eradication
--
--
+- Windy Path
+- Saint John's Festival
