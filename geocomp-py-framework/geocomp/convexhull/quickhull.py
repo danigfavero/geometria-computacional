@@ -16,11 +16,11 @@ def extreme(P, p, r):
     '''Recebe P e, usando area, devolve o índice de um ponto extremo da coleção
     distinto de p e r.'''
     q = p + 1
-    larger = area(P[p], P[r], P[q])
-    for i in range(p + 2, r - 1):
-        if area(P[p], P[r], P[i]) > larger:
+    greatest = area(P[p], P[r], P[q])
+    for i in range(p + 2, r):
+        if area(P[p], P[r], P[i]) > greatest:
             q = i
-            larger = area(P[p], P[r], P[q])
+            greatest = area(P[p], P[r], P[q])
     return q
 
 def partition(P, p, r):
@@ -32,7 +32,7 @@ def partition(P, p, r):
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
 
-    for k in range(r - 1, p + 2, -1):
+    for k in range(r - 1, p, -1):
         if left(P[p], P[p + 1], P[k]):
             s -= 1
             P[s], P[k] = P[k], P[s]
@@ -48,7 +48,7 @@ def partition(P, p, r):
 
     if s != q:
         P[s], P[p + 1] = P[p + 1], P[s]
-    p -= 1
+    s -= 1
     P[s], P[p] = P[p], P[s]
     return s, q
 
@@ -63,10 +63,9 @@ def quickhull_rec(P, p, r):
     hull = quickhull_rec(P, q, r)
     hull2 = quickhull_rec(P, s, q)
 
-    h = len(hull)
-    for i in range(1, len(hull2)):
-        hull[h] = hull2[i]
-        h += 1
+    # junta os hulls e remove uma cópia do q
+    for i in range(len(hull2) - 1):
+        hull.append(hull2[i])
     return hull
 
 def Quickhull(P):
@@ -75,12 +74,14 @@ def Quickhull(P):
     if n == 1:
         return [P[0]]
 
+    # encontra primeiro ponto extremo
     k = 0
     for i in range(n):
         if P[i].y < P[k].y:
             k = i
     P[0], P[k] = P[k], P[0]
 
+    # encontra extremo consecutivo ao primeiro
     i = 1
     for j in range(2, n):
         if right(P[0], P[i], P[j]):
@@ -88,3 +89,4 @@ def Quickhull(P):
     P[n - 1], P[i] = P[i], P[n - 1]
 
     return quickhull_rec(P, 0, n-1)
+
