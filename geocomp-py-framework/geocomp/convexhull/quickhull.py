@@ -2,11 +2,9 @@
 """Computa o fecho convexo 2D de uma coleção de n pontos, usando uma técnica
 de divisão e conquista similar ao Quicksort."""
 
-from geocomp.common.point import Point
 from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.common.prim import right, area2, left
-
 
 def area(a, b, c):
     '''Devolve a área do triângulo cujos extremos são os pontos a, b, c.'''
@@ -29,19 +27,40 @@ def partition(P, p, r):
     fecho convexo da coleção no sentido anti-horário. Rearranja a coleção de
     pontos e devolve (s,q) para o algoritmo do QuickHull.'''
     q = extreme(P, p, r)
+    
+    P[p].hilight('green')
+    P[r].hilight('red')
+    control.freeze_update()
+    base = P[p].lineto(P[r], 'blue')
+    control.sleep()
+    control.freeze_update()
+    control.update()
+
+    P[q].hilight('yellow')
+    left_edge = P[q].lineto(P[p], 'cyan')
+    right_edge = P[q].lineto(P[r], 'cyan')
+    control.sleep()
+    control.update()
+
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
 
     for k in range(r - 1, p, -1):
         if left(P[p], P[p + 1], P[k]):
+            P[k].hilight('green')
             s -= 1
             P[s], P[k] = P[k], P[s]
         elif left(P[p + 1], P[r], P[k]):
+            P[k].hilight('red')
             s -= 1
             q -= 1
             P[k], P[q] = P[q], P[k]
             if s != q:
                 P[k], P[s] = P[s], P[k]
+
+    control.plot_delete(base)
+    control.update()
+
     s -= 1
     q -= 1
     P[q], P[p + 1] = P[p + 1], P[q]
