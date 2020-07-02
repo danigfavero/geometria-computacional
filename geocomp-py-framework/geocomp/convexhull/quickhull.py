@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-"""Computa o fecho convexo 2D de uma coleção de n pontos, usando uma técnica
-de divisão e conquista similar ao Quicksort."""
+"""Computa o fecho convexo 2D de uma coleção de n pontos, usando uma técnica de
+divisão e conquista similar ao Quicksort."""
 
 from geocomp.common import control
 from geocomp.common.guiprim import *
-from geocomp.common.prim import right, area2, left
+from geocomp.common.prim import right, area2, left, collinear, dist2
 
 # coleções globais auxiliando a animação :p
 ids = []
@@ -20,16 +20,23 @@ def extreme(P, p, r):
     q = p + 1
     greatest = area(P[p], P[r], P[q])
     for i in range(p + 2, r):
-        if area(P[p], P[r], P[i]) > greatest:
+        a = area(P[p], P[r], P[i])
+        if a > greatest:
             q = i
-            greatest = area(P[p], P[r], P[q])
+            greatest = a
+        # desempata pegando o ponto mais alto (ou mais à esquerda)
+        elif a == greatest:
+            if P[i].y > P[q].y or (P[i].y == P[q].y and P[i].x > P[q].x):
+                q = i
+                greatest = a
+
     return q
 
 def partition(P, p, r):
-    '''Recebe uma coleção de pontos em posição geral, com pelo menos 3 pontos
-    tal que os pontos de índice p e r são extremos consecutivos na fronteira do
-    fecho convexo da coleção no sentido anti-horário. Rearranja a coleção de
-    pontos e devolve (s,q) para o algoritmo do QuickHull.'''
+    '''Recebe uma coleção de pontos em posição geral, com pelo menos 3 pontos tal
+    que os pontos de índice p e r são extremos consecutivos na fronteira do fecho
+    convexo da coleção no sentido anti-horário. Rearranja a coleção de pontos e
+    devolve (s,q) para o algoritmo do QuickHull.'''
     q = extreme(P, p, r)
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
@@ -94,10 +101,12 @@ def quickhull_rec(P, p, r):
 
     hull = quickhull_rec(P, q, r)
     hull2 = quickhull_rec(P, s, q)
-
+    print("1: ", hull)
+    print("2: ", hull2)
     # junta os hulls e remove uma cópia do q
-    for i in range(len(hull2) - 1):
+    for i in range(1, len(hull2)):
         hull.append(hull2[i])
+    print("1 + 2: ", hull)
     return hull
 
 def Quickhull(P):
@@ -109,14 +118,19 @@ def Quickhull(P):
     # encontra primeiro ponto extremo
     k = 0
     for i in range(n):
-        if P[i].y < P[k].y:
+        # desempata por x
+        if P[i].y < P[k].y or (P[i].y == P[k].y and P[i].x < P[k].x):
             k = i
     P[0], P[k] = P[k], P[0]
 
     # encontra extremo consecutivo ao primeiro
     i = 1
+    dist = 0
     for j in range(2, n):
         if right(P[0], P[i], P[j]):
+            i = j
+        # desempata pelo mais distante
+        elif collinear(P[0], P[i], P[j]) and dist2(P[0], P[i]) < dist2(P[0], P[j]):
             i = j
     P[n - 1], P[i] = P[i], P[n - 1]
 
@@ -125,5 +139,7 @@ def Quickhull(P):
     control.update()
     control.freeze_update()
     control.sleep()
-    return quickhull_rec(P, 0, n-1)
+    quick = quickhull_rec(P, 0, n-1)
+    #print(quick)
+    return quick
 
