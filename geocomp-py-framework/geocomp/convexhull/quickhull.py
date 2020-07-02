@@ -6,6 +6,10 @@ from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.common.prim import right, area2, left
 
+# coleções globais auxiliando a animação :p
+ids = []
+points = {}
+
 def area(a, b, c):
     '''Devolve a área do triângulo cujos extremos são os pontos a, b, c.'''
     return abs(area2(a, b, c)/2.0)
@@ -27,39 +31,31 @@ def partition(P, p, r):
     fecho convexo da coleção no sentido anti-horário. Rearranja a coleção de
     pontos e devolve (s,q) para o algoritmo do QuickHull.'''
     q = extreme(P, p, r)
-    
-    P[p].hilight('green')
-    P[r].hilight('red')
-    control.freeze_update()
-    base = P[p].lineto(P[r], 'blue')
-    control.sleep()
-    control.freeze_update()
-    control.update()
-
-    P[q].hilight('yellow')
-    left_edge = P[q].lineto(P[p], 'cyan')
-    right_edge = P[q].lineto(P[r], 'cyan')
-    control.sleep()
-    control.update()
-
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
 
+    for point, id in ids:
+        point.unhilight(id)
+
     for k in range(r - 1, p, -1):
         if left(P[p], P[p + 1], P[k]):
-            P[k].hilight('green')
+            id = P[k].hilight('green')
+            ids.append((P[k], id))
             s -= 1
             P[s], P[k] = P[k], P[s]
         elif left(P[p + 1], P[r], P[k]):
-            P[k].hilight('red')
+            id = P[k].hilight('red')
+            ids.append((P[k], id))
             s -= 1
             q -= 1
             P[k], P[q] = P[q], P[k]
             if s != q:
                 P[k], P[s] = P[s], P[k]
 
-    control.plot_delete(base)
+    control.thaw_update()
     control.update()
+    control.freeze_update()
+    control.sleep()
 
     s -= 1
     q -= 1
@@ -76,9 +72,26 @@ def quickhull_rec(P, p, r):
     início p e um fim r dados por meio da função partition. Devolve os hulls
     gerados a cada chamada recursiva.'''
     if p == r - 1:
+        P[r].lineto(P[p], 'cyan')
+        control.thaw_update()
+        control.update()
+        control.freeze_update()
+        control.sleep()
         return [P[r], P[p]]
 
+    if (P[p], P[r]) in points.keys():
+        id = points.pop((P[p], P[r]))
+        control.plot_delete(id)
+
     s, q = partition(P, p, r)
+
+    points[(P[p], P[q])] = P[p].lineto(P[q], 'cyan')
+    points[(P[q], P[r])] = P[q].lineto(P[r], 'cyan')
+    control.thaw_update()
+    control.update()
+    control.freeze_update()
+    control.sleep()
+
     hull = quickhull_rec(P, q, r)
     hull2 = quickhull_rec(P, s, q)
 
@@ -107,5 +120,10 @@ def Quickhull(P):
             i = j
     P[n - 1], P[i] = P[i], P[n - 1]
 
+    P[0].lineto(P[n-1], 'cyan')
+    control.thaw_update()
+    control.update()
+    control.freeze_update()
+    control.sleep()
     return quickhull_rec(P, 0, n-1)
 
