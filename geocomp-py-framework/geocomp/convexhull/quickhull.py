@@ -38,6 +38,13 @@ def partition(P, p, r):
     convexo da coleção no sentido anti-horário. Rearranja a coleção de pontos e
     devolve (s,q) para o algoritmo do QuickHull.'''
     q = extreme(P, p, r)
+    points[(P[p], P[q])] = P[p].lineto(P[q], 'cyan')
+    points[(P[q], P[r])] = P[q].lineto(P[r], 'cyan')
+    control.thaw_update()
+    control.update()
+    control.freeze_update()
+    control.sleep()
+
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
 
@@ -79,11 +86,6 @@ def quickhull_rec(P, p, r):
     início p e um fim r dados por meio da função partition. Devolve os hulls
     gerados a cada chamada recursiva.'''
     if p == r - 1:
-        P[r].lineto(P[p], 'cyan')
-        control.thaw_update()
-        control.update()
-        control.freeze_update()
-        control.sleep()
         return [P[r], P[p]]
 
     if (P[p], P[r]) in points.keys():
@@ -92,21 +94,12 @@ def quickhull_rec(P, p, r):
 
     s, q = partition(P, p, r)
 
-    points[(P[p], P[q])] = P[p].lineto(P[q], 'cyan')
-    points[(P[q], P[r])] = P[q].lineto(P[r], 'cyan')
-    control.thaw_update()
-    control.update()
-    control.freeze_update()
-    control.sleep()
-
     hull = quickhull_rec(P, q, r)
     hull2 = quickhull_rec(P, s, q)
-    print("1: ", hull)
-    print("2: ", hull2)
+
     # junta os hulls e remove uma cópia do q
     for i in range(1, len(hull2)):
         hull.append(hull2[i])
-    print("1 + 2: ", hull)
     return hull
 
 def Quickhull(P):
@@ -140,6 +133,5 @@ def Quickhull(P):
     control.freeze_update()
     control.sleep()
     quick = quickhull_rec(P, 0, n-1)
-    #print(quick)
     return quick
 
