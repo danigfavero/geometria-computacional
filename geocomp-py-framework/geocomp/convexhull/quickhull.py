@@ -2,6 +2,7 @@
 """Computa o fecho convexo 2D de uma coleção de n pontos, usando uma técnica de
 divisão e conquista similar ao Quicksort."""
 
+from geocomp.common.point import Point
 from geocomp.common import control
 from geocomp.common.guiprim import *
 from geocomp.common.prim import right, area2, left, collinear, dist2
@@ -32,19 +33,26 @@ def extreme(P, p, r):
 
     return q
 
-def partition(P, p, r):
+def partition(P, p, r, point_p, point_r):
     '''Recebe uma coleção de pontos em posição geral, com pelo menos 3 pontos tal
     que os pontos de índice p e r são extremos consecutivos na fronteira do fecho
     convexo da coleção no sentido anti-horário. Rearranja a coleção de pontos e
     devolve (s,q) para o algoritmo do QuickHull.'''
     q = extreme(P, p, r)
+    points[(point_r, P[q])] = point_r.lineto(P[q], 'cyan')
+    points[(P[q], point_p)] = P[q].lineto(point_p, 'cyan')
+    control.thaw_update()
+    control.update()
+    control.freeze_update()
+    control.sleep()
+
     P[p + 1], P[q] = P[q], P[p + 1]
     s = q = r
 
     for point, id in ids:
         point.unhilight(id)
 
-    for k in range(r - 1, p, -1):
+    for k in range(r - 1, p + 1, -1):
         if left(P[p], P[p + 1], P[k]):
             id = P[k].hilight('green')
             ids.append((P[k], id))
@@ -74,39 +82,32 @@ def partition(P, p, r):
     P[s], P[p] = P[p], P[s]
     return s, q
 
-def quickhull_rec(P, p, r):
+def quickhull_rec(P, p, r, point_p, point_r):
     '''Miolo recursivo da função Quickhull. Recebe uma coleção de pontos P, um
     início p e um fim r dados por meio da função partition. Devolve os hulls
     gerados a cada chamada recursiva.'''
     if p == r - 1:
-        P[r].lineto(P[p], 'cyan')
-        control.thaw_update()
-        control.update()
-        control.freeze_update()
-        control.sleep()
         return [P[r], P[p]]
 
-    if (P[p], P[r]) in points.keys():
-        id = points.pop((P[p], P[r]))
+    if (point_r, point_p) in points.keys():
+        id = points.pop((point_r, point_p))
         control.plot_delete(id)
 
-    s, q = partition(P, p, r)
+    if (point_p, point_r) in points.keys():
+        id = points.pop((point_p, point_r))
+        control.plot_delete(id)
 
-    points[(P[p], P[q])] = P[p].lineto(P[q], 'cyan')
-    points[(P[q], P[r])] = P[q].lineto(P[r], 'cyan')
-    control.thaw_update()
-    control.update()
-    control.freeze_update()
-    control.sleep()
+    s, q = partition(P, p, r, point_p, point_r)
+    new_q = Point(P[q].x, P[q].y)
+    new_r = Point(P[r].x, P[r].y)
+    new_s = Point(P[s].x, P[s].y)
+    
+    hull = quickhull_rec(P, q, r, new_q, new_r)
+    hull2 = quickhull_rec(P, s, q, new_s, new_q)
 
-    hull = quickhull_rec(P, q, r)
-    hull2 = quickhull_rec(P, s, q)
-    print("1: ", hull)
-    print("2: ", hull2)
     # junta os hulls e remove uma cópia do q
     for i in range(1, len(hull2)):
         hull.append(hull2[i])
-    print("1 + 2: ", hull)
     return hull
 
 def Quickhull(P):
@@ -139,7 +140,8 @@ def Quickhull(P):
     control.update()
     control.freeze_update()
     control.sleep()
-    quick = quickhull_rec(P, 0, n-1)
-    #print(quick)
+    quick = quickhull_rec(P, 0, n-1, Point(P[0].x, P[0].y), Point(P[n-1].x, P[n-1].y))
+    for p in quick:
+        p.hilight('yellow')
     return quick
 
