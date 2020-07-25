@@ -2,12 +2,11 @@ from geocomp.common import prim
 from geocomp.common import point
 from geocomp.common import segment
 from geocomp.common import control
-from geocomp.common.prim import area2, left
+from geocomp.common.prim import area2, left, right
 from geocomp import config
 from bintrees import RBTree
-from .my_tree import MyTree
 from sortedcontainers import SortedKeyList
-
+         
 
 dic = {}
 intersections = []
@@ -67,7 +66,7 @@ def treat_event(p, Q, T):
     print("ANTES")
     # print(dic)
     for seg in T:
-        print("key: ", str(seg))
+        print(f"key: {T.key(seg)}, value: {seg}")
     
     linea = 0
     point.hilight("green")
@@ -82,7 +81,9 @@ def treat_event(p, Q, T):
             prev_index -= 1
             if prev_index >= 0:
                 pred = T[prev_index][1]
+                print("PRED: ", pred)
                 if s.intersects(pred):
+                    print("INTERSECTA!!!!")
                     verify_new_event(point, Q, s, pred)
         except IndexError:
             pass
@@ -90,6 +91,7 @@ def treat_event(p, Q, T):
             next_index = T.bisect_right(s)
             if next_index <= len(T):
                 succ = T[next_index][1]
+                print("SUCC: ", succ)
                 if s.intersects(succ):
                     verify_new_event(point, Q, s, succ) 
         except IndexError:
@@ -109,6 +111,8 @@ def treat_event(p, Q, T):
             if prev_index >= 0 and next_index <= len(T):
                 pred = T[prev_index][1]
                 succ = T[next_index][1]
+                print("PRED: ", pred)
+                print("SUCC: ", succ)
                 T.pop(T.index(s))    
                 if pred.intersects(succ):
                     verify_new_event(point, Q, succ, pred)
@@ -118,8 +122,11 @@ def treat_event(p, Q, T):
     if event.t == "inter":
         s1 = event.s1
         s2 = event.s2
+        if right(s2.lower, s2.upper, s1.lower):
+            s1, s2 = s2, s1
         rs1 = dic[s1]
         rs2 = dic[s2]
+
         intersection = intersection_point(s1,s2)
         intersections.append(intersection)
         intersections[len(intersections) - 1].hilight("yellow")
@@ -132,16 +139,22 @@ def treat_event(p, Q, T):
             prev_index -= 1
             if prev_index < 0:
                 pred = None
-            else:
+            if rs1 == T[prev_index]:
+                prev_index -= 1 
+            elif prev_index >= 0:
                 pred = T[prev_index][1]
+                print("PRED: ", pred)
         except IndexError:
             pred = None
         try:
             next_index = T.bisect_right(rs2)
             if next_index >= len(T):
                 succ = None
-            else:
+            if rs2 == T[next_index]:
+                next_index += 1
+            elif next_index < len(T):
                 succ = T[next_index][1]
+                print("SUCC: ", succ)
         except IndexError:
             succ = None
         print("s1: ", s1, " rs1: ", rs1)
@@ -151,6 +164,7 @@ def treat_event(p, Q, T):
         # Insere ao contrário
         new_s1 = segment.Segment(intersection, s1.upper)
         new_s2 = segment.Segment(intersection, s2.upper)
+        print(f"new_s1: {new_s1}, new_s2:{new_s2}")
         T.add((new_s2, s2))
         T.add((new_s1, s1))
         dic[s1] = (new_s1, s1)

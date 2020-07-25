@@ -35,11 +35,12 @@ class Point:
         return Point(self.x - other.x, self.y - other.y)
 
     def __eq__(self, other):
+        eps = .0000000001
         if self is other:
             return True
         if type(self) != type(other):
             return False
-        return self.x == other.x and self.y == other.y
+        return abs(self.x - other.x) < eps and (self.y - other.y) < eps
 
     def __hash__(self):
         return 31 * hash(self.x) + hash(self.y)

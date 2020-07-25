@@ -150,7 +150,7 @@ class Segment:
     @p1.setter
     def p2(self, p2):
         self.init = p2
-
+        
     """
     Ordem dada pela esquerda, utilizando o ponto de intersecção entre dois segmentos
     PS: Usado no projeto de Bento Pereira e Daniela Favero para detectar todas
@@ -158,15 +158,14 @@ class Segment:
     """
 
     def new_left(self, other):
-        vaca = .0000000001
-        if(area2 (self.lower, self.upper, other.lower) > 0):
+        eps = .0000000001
+        if area2(self.lower, self.upper, other.lower) > 0:
             return True
-        elif(abs(area2(self.lower, self.upper, other.lower)) <= vaca and other.upper > other.lower):
+        elif abs(area2(self.lower, self.upper, other.lower)) <= eps and other.upper > other.lower:
             return True
         return False
 
     def __lt__(self, other):
-        vaca = .0000000001
         if type(self) != type(other):
             return False
         if other.new_left(self):
@@ -174,7 +173,7 @@ class Segment:
         return False
 
     def __le__(self, other):
-        vaca = .0000000001
+        eps = .0000000001
         if type(self) != type(other):
             return False
         if other.has_left(self.lower) or (other.lower == self.lower and self.upper.y < other.upper.y):
